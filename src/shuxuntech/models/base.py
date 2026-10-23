@@ -41,6 +41,10 @@ __all__ = ["Model", "camel_to_snake", "snake_to_camel"]
 
 _M = TypeVar("_M", bound="Model")
 
+_UNION_TYPES = (Union,)
+if hasattr(types, "UnionType"):  # Python 3.10+
+    _UNION_TYPES = (Union, types.UnionType)  # type: ignore[assignment]
+
 
 def camel_to_snake(name: str) -> str:
     """把 ``camelCase`` / ``PascalCase`` 转成 ``snake_case``。"""
@@ -123,7 +127,7 @@ def _convert(value: Any, hint: Any) -> Any:
         return None
 
     origin = get_origin(hint)
-    if origin is Union or origin is getattr(types, "UnionType", None):
+    if origin in _UNION_TYPES:
         args = [arg for arg in get_args(hint) if arg is not type(None)]
         return _convert(value, args[0]) if args else value
 
